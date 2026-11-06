@@ -54,8 +54,12 @@ MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
 
 pytestmark = pytest.mark.integration
 
-# PNG and JPEG magic headers.
+# PNG and JPEG magic headers (JPEG starts with FF D8 FF).
 IMAGE_MAGIC = (b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff")
+
+
+def _is_image(raw: bytes) -> bool:
+    return any(raw.startswith(m) for m in IMAGE_MAGIC)
 
 
 def _client() -> httpx.Client:
@@ -104,7 +108,7 @@ def test_generate_one_1x1_image_end_to_end() -> None:
     assert len(body["data"]) == 1
     b64 = body["data"][0]["b64_json"]
     raw = base64.b64decode(b64, validate=True)
-    assert raw[:4] in IMAGE_MAGIC, f"decoded bytes are not a PNG/JPEG: {raw[:16]!r}"
+    assert _is_image(raw), f"decoded bytes are not a PNG/JPEG: {raw[:16]!r}"
 
 
 def test_generate_rejects_disallowed_model_against_live_proxy() -> None:
