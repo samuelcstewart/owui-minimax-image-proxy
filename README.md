@@ -153,6 +153,10 @@ timeout, malformed response, wrong image count) → 502.
 {"status": "degraded"}  // 503 otherwise (unreachable, 401, 5xx, ...)
 ```
 
+## Releasing
+
+Versions are cut automatically by [python-semantic-release](https://github.com/python-semantic-release/python-semantic-release) from the conventional commits on `main` — see `[tool.semantic_release]` in `pyproject.toml` and `.github/workflows/release.yml`. A `vX.Y.Z` tag triggers the `ci` workflow, which publishes `:vX.Y.Z`, `:vX.Y`, `:vX` image tags to GHCR. `CHANGELOG.md` is generated; do not edit it by hand.
+
 ## Publishing
 
 A GitHub Actions workflow builds and pushes a multi-arch image to
