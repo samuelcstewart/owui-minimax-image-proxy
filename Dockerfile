@@ -14,6 +14,7 @@ FROM python:3.14-slim-bookworm AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /uvx /usr/local/bin/
 
 WORKDIR /app
+
 # Project metadata first so the dep layer caches across source changes.
 # README is required by hatchling (validates the readme field).
 COPY pyproject.toml uv.lock README.md ./
