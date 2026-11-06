@@ -1,0 +1,35 @@
+# Local-dev compose for owui-minimax-image-proxy.
+#
+# Brings up ONLY this proxy — the upstream (MiniMax) is remote, so the
+# only thing the proxy needs is MINIMAX_API_KEY in its environment.
+#
+# MiniMax has no /v1/images/generations (404) — only the native
+# POST /v1/image_generation — which is exactly the gap this proxy
+# fills for Open WebUI.
+#
+# Usage:
+#   export MINIMAX_API_KEY=...        # real key, never committed
+#   docker compose up -d --build      # dev stack (proxy only)
+#   curl -X POST http://localhost:8000/images/generations \
+#     -H 'Content-Type: application/json' \
+#     -d '{"model":"image-01","prompt":"a red square on white","n":1,"size":"1024x1024","response_format":"b64_json"}' | jq '.data[0].b64_json | length'
+#   curl http://localhost:8000/health | jq
+#   docker compose down               # tear down
+#
+# NOTE: /health probes the live MiniMax GET /v1/models with the bearer
+# key, so it returns 503 until a valid MINIMAX_API_KEY is provided.
+# `poe integration-test` waits for this and runs the integration suite.
+
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: owui-minimax-image-dev-proxy
+    environment:
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY:?MINIMAX_API_KEY must be set in the env — see README}
+      # MINIMAX_API_BASE_URL: https://api.minimax.io/v1   # default
+      # IMAGE_GEN_TIMEOUT_SECS: "120"                     # default
+      # MAX_PROMPT_CHARS: "1500"                          # default
+    ports:
+      - "8000:8000"
