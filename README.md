@@ -89,10 +89,11 @@ For a standalone build of the proxy image only:
 poe build                            # multi-arch (amd64+arm64), --load (Docker 29+)
 ```
 
-Integration tests against the live MiniMax API (one real image, ~24 s):
+Integration tests sanity-check the running image against a repo-owned
+stub upstream (no MiniMax key or external network needed):
 
 ```bash
-MINIMAX_API_KEY=... poe integration-test   # compose up → pytest -m integration → compose down
+poe integration-test   # compose up (proxy image + stub) → pytest -m integration → compose down
 ```
 
 ## API

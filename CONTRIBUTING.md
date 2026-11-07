@@ -79,11 +79,19 @@ description.
 ## Build
 
 The image is built with buildx. The bundled `docker-compose.yml` does
-this for local dev (proxy only — upstream MiniMax is remote, the key
-comes from `MINIMAX_API_KEY` in the env):
+this for local dev (proxy + a repo-owned stub upstream that mimics
+the MiniMax API from `tests/stub_upstream.py` — no key or external
+network needed):
 
 ```
-MINIMAX_API_KEY=... docker compose build
+docker compose build
+```
+
+For a multi-arch (`linux/amd64` + `linux/arm64`) image loaded into
+the local Docker daemon:
+
+```
+poe build
 ```
 
 For a multi-arch (`linux/amd64` + `linux/arm64`) image loaded into

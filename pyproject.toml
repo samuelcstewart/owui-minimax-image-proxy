@@ -70,14 +70,14 @@ known-first-party = ["owui_minimax_image_proxy"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-# Skip `integration` tests by default — they require a real MiniMax
-# API key (`MINIMAX_API_KEY`) and hit the live upstream. Run them via
-# `poe integration-test`, which orchestrates the lifecycle.
+# Skip `integration` tests by default — they sanity-check the running
+# image against the repo-owned stub upstream via docker compose. Run
+# them via `poe integration-test`, which orchestrates the lifecycle.
 # `-m "not integration"` here means `poe test` (and `poe check`)
-# never hit the network.
+# never touch docker or the network.
 addopts = ["-ra", "--strict-markers", "-m", "not integration"]
 markers = [
-    "integration: end-to-end tests that hit the live MiniMax API (run via `poe integration-test`)",
+    "integration: image-sanity tests against the compose stack (proxy image + stub upstream; run via `poe integration-test`)",
 ]
 
 # ---- poe -----------------------------------------------------------------
@@ -118,7 +118,7 @@ help = "Run unit tests (skips integration tests — use `poe integration-test` f
 cmd = "pytest"
 
 [tool.poe.tasks.integration-test]
-help = "Stand up the proxy container via docker compose with MINIMAX_API_KEY from the env, run the integration test suite against the live MiniMax API, then tear the stack down"
+help = "Stand up the proxy image + stub upstream via docker compose, run the image-sanity integration suite against the running proxy, then tear the stack down. No MiniMax key or external network needed."
 shell = """
 set -euo pipefail
 cleanup() {
@@ -127,13 +127,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ -z "${MINIMAX_API_KEY:-}" ]; then
-  echo "!! MINIMAX_API_KEY is not set — integration tests need a real key." >&2
-  echo "   e.g. MINIMAX_API_KEY=... poe integration-test" >&2
-  exit 1
-fi
-
-echo ">> building + bringing up the proxy"
+echo ">> building + bringing up the proxy + stub upstream"
 docker compose up -d --build --remove-orphans
 
 echo ">> waiting for proxy health at $PROXY_HEALTH_URL"
